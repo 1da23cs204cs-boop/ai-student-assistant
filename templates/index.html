@@ -11,35 +11,36 @@
         }
 
         .container {
-            width: 500px;
+            width: 600px;
             margin: auto;
-            margin-top: 50px;
+            margin-top: 30px;
         }
 
         .box {
             background: white;
             color: black;
             padding: 20px;
-            margin: 20px 0;
+            margin: 15px 0;
             border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        }
-
-        input, button {
-            padding: 10px;
-            margin-top: 10px;
-            width: 90%;
         }
 
         button {
-            background: #4facfe;
-            color: white;
-            border: none;
-            cursor: pointer;
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
         }
 
-        button:hover {
-            background: #007bff;
+        input {
+            padding: 10px;
+            width: 95%;
+        }
+
+        #output {
+            margin-top: 20px;
+            background: white;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -52,36 +53,72 @@
 
     <div class="box">
         <h3>Upload Notes</h3>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file">
-            <button type="submit">Upload</button>
-        </form>
+        <input type="file" id="file">
+        <button onclick="uploadFile()">Upload</button>
     </div>
 
     <div class="box">
         <h3>Ask Question</h3>
-        <form action="/ask" method="post">
-            <input type="text" name="question" placeholder="Ask from your notes">
-            <button type="submit">Ask</button>
-        </form>
+        <input type="text" id="question" placeholder="Ask something">
+        <button onclick="askQuestion()">Ask</button>
     </div>
 
     <div class="box">
-        <h3>Summary</h3>
-        <a href="/summary"><button>Generate Summary</button></a>
+        <button onclick="getSummary()">Summary</button>
+        <button onclick="getFlashcards()">Flashcards</button>
+        <button onclick="getQuiz()">Quiz</button>
     </div>
 
-    <div class="box">
-        <h3>Flashcards</h3>
-        <a href="/flashcards"><button>Generate Flashcards</button></a>
-    </div>
-
-    <div class="box">
-        <h3>Quiz</h3>
-        <a href="/quiz"><button>Generate Quiz</button></a>
-    </div>
+    <div id="output">Results will appear here...</div>
 
 </div>
+
+<script>
+async function uploadFile() {
+    let fileInput = document.getElementById("file");
+    let formData = new FormData();
+    formData.append("file", fileInput.files[0]);
+
+    let res = await fetch("/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    let text = await res.text();
+    document.getElementById("output").innerHTML = text;
+}
+
+async function askQuestion() {
+    let question = document.getElementById("question").value;
+
+    let res = await fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({question})
+    });
+
+    let text = await res.text();
+    document.getElementById("output").innerHTML = text;
+}
+
+async function getSummary() {
+    let res = await fetch("/summary");
+    let text = await res.text();
+    document.getElementById("output").innerHTML = text;
+}
+
+async function getFlashcards() {
+    let res = await fetch("/flashcards");
+    let text = await res.text();
+    document.getElementById("output").innerHTML = text;
+}
+
+async function getQuiz() {
+    let res = await fetch("/quiz");
+    let text = await res.text();
+    document.getElementById("output").innerHTML = text;
+}
+</script>
 
 </body>
 </html>
