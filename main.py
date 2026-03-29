@@ -1,6 +1,10 @@
 from flask import Flask, request, render_template
+import os
+from openai import OpenAI
 
 app = Flask(__name__)
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 stored_text = ""
 
@@ -18,45 +22,47 @@ def upload():
 
     stored_text = file.read().decode("utf-8", errors="ignore")
 
-    return "<h2>File uploaded successfully!</h2><a href='/'>Go Back</a>"
+    return "<h2>File uploaded!</h2><a href='/'>Back</a>"
+
+def ask_ai(prompt):
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
 
 @app.route('/summary')
 def summary():
     if not stored_text:
         return "Upload notes first!"
 
-    summary = stored_text[:500]
-    return f"<h2>Summary:</h2><p>{summary}</p><a href='/'>Back</a>"
+    prompt = f"Summarize this:\n{stored_text}"
+    result = ask_ai(prompt)
+
+    return f"<h2>Summary</h2><p>{result}</p><a href='/'>Back</a>"
 
 @app.route('/ask', methods=['POST'])
 def ask():
     question = request.form.get("question")
 
-    if not stored_text:
-        return "Upload notes first!"
+    prompt = f"Answer based on these notes:\n{stored_text}\nQuestion:{question}"
+    result = ask_ai(prompt)
 
-    if question.lower() in stored_text.lower():
-        return f"<h2>Answer found in notes!</h2><a href='/'>Back</a>"
-    else:
-        return "<h2>Answer not found.</h2><a href='/'>Back</a>"
+    return f"<h2>Answer</h2><p>{result}</p><a href='/'>Back</a>"
 
 @app.route('/flashcards')
 def flashcards():
-    if not stored_text:
-        return "Upload notes first!"
+    prompt = f"Create 5 flashcards from this:\n{stored_text}"
+    result = ask_ai(prompt)
 
-    lines = stored_text.split('.')[:5]
-    cards = "".join([f"<p>Q: {l.strip()} ?<br>A: {l.strip()}</p>" for l in lines])
-    return f"<h2>Flashcards</h2>{cards}<a href='/'>Back</a>"
+    return f"<h2>Flashcards</h2><p>{result}</p><a href='/'>Back</a>"
 
 @app.route('/quiz')
 def quiz():
-    if not stored_text:
-        return "Upload notes first!"
+    prompt = f"Create a 5-question quiz with answers:\n{stored_text}"
+    result = ask_ai(prompt)
 
-    lines = stored_text.split('.')[:5]
-    quiz = "".join([f"<p>Q{i+1}: {l.strip()} ?</p>" for i,l in enumerate(lines)])
-    return f"<h2>Quiz</h2>{quiz}<a href='/'>Back</a>"
+    return f"<h2>Quiz</h2><p>{result}</p><a href='/'>Back</a>"
 
 if __name__ == "__main__":
     app.run()
