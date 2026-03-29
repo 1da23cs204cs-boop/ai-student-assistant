@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Student Assistant</title>
+</head>
+<body>
+    <h1>AI Student Assistant</h1>
+
+    <h2>Upload Notes</h2>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <button type="submit">Upload</button>
+    </form>
+
+    <h2>Ask Question</h2>
+    <form action="/ask" method="post">
+        <input type="text" name="question" placeholder="Ask something">
+        <button type="submit">Ask</button>
+    </form>
+</body>
+</html>
